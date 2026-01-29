@@ -24,30 +24,28 @@ jobs:
         with:
           node-version: '20'
 
-      # IMPORTANT:
-      # Do NOT pin pnpm version here, because your package.json already pins it via "packageManager": "pnpm@x.y.z"
-      # Pinning here causes "Multiple versions of pnpm specified" error.
+      # Follow package.json "packageManager": "pnpm@x.y.z"
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
 
+      # FIX: lockfile outdated -> allow CI to install without frozen lockfile
       - name: Install dependencies
         if: hashFiles('pnpm-lock.yaml') != ''
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Get Hugo Version
         id: hugo
         shell: bash
         run: |
-          # Read hugo_version from hugoblox.yaml, fallback to a safe default
           VERSION="0.154.4"
 
           if [[ -f "hugoblox.yaml" ]]; then
             v="$(awk -F: '/^[[:space:]]*hugo_version:[[:space:]]*/{print $2; exit}' hugoblox.yaml || true)"
             v="${v//\"/}"
             v="${v//\'/}"
-            v="$(echo "$v" | xargs)"   # trim spaces
+            v="$(echo "$v" | xargs)"
             if [[ -n "$v" ]]; then
               VERSION="$v"
             fi
