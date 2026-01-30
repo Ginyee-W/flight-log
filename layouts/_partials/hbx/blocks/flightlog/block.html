@@ -4,14 +4,15 @@
 {{- $flights := slice -}}
 {{- $groups := slice -}}
 
-{{- /* 1) Best: get the "flights" section page and use its RegularPages */ -}}
+{{- /* 1) Best: get flights section and use its RegularPages */ -}}
 {{- with ($site.GetPage "section" "flights") -}}
-  {{- $flights = .RegularPages -}}
+  {{- $flights = .RegularPages | default (slice) -}}
 {{- end -}}
 
-{{- /* 2) Fallback: scan all site pages and keep only regular pages in Section=flights */ -}}
+{{- /* 2) Fallback: scan site pages safely (Pages might be nil in some contexts) */ -}}
 {{- if eq (len $flights) 0 -}}
-  {{- $flights = where $site.Pages "Section" "flights" -}}
+  {{- $all := $site.Pages | default (slice) -}}
+  {{- $flights = where $all "Section" "flights" -}}
   {{- $flights = where $flights "Kind" "page" -}}
 {{- end -}}
 
